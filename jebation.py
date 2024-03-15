@@ -2,6 +2,7 @@ from typing import List
 from PIL import Image, ImageSequence
 from math import cos, radians
 from traceback import print_exc
+import argparse
 
 import sys
 import numpy as np
@@ -12,7 +13,7 @@ def rainbow_angle(number: float) -> float:
     return abs(cos(radians(number)))
 
 
-def rainbow_list(image: Image.Image) -> List[Image.Image]:
+def rainbow_list(image: Image.Image, color_change_rate: float) -> List[Image.Image]:
     """Make List of rainbow image."""
     frames = ImageSequence.all_frames(image)
     if len(frames) > 1:
@@ -26,7 +27,7 @@ def rainbow_list(image: Image.Image) -> List[Image.Image]:
 
     colored_frames = []
     for i, (np_frame, info) in enumerate(np_frames):
-        change_color = i * 180 / len(np_frames)
+        change_color = i * color_change_rate / len(np_frames)
         alpha_channel = np_frame[..., 3]
         np_frame[..., 0] = np_frame[..., 0] * rainbow_angle(change_color + 45)
         np_frame[..., 1] = np_frame[..., 1] * rainbow_angle(change_color + 90)
@@ -38,10 +39,10 @@ def rainbow_list(image: Image.Image) -> List[Image.Image]:
     return colored_frames
 
 
-def rainbow(path: str, dest: str) -> None:
+def rainbow(path: str, dest: str, color_change_rate: float) -> None:
     """Make rainbow image of image at `path`."""
     image = Image.open(path)
-    frames = rainbow_list(image)
+    frames = rainbow_list(image, color_change_rate)
     frames[0].save(
         dest,
         background=frames[0].info.get("background", 255),
@@ -59,10 +60,17 @@ def rainbow(path: str, dest: str) -> None:
 
 
 if __name__ == "__main__":
-    path_number = len(sys.argv) - 1
-    for progress, path in enumerate(sys.argv[1:], start=1):
-        print(f"\rConvert {path} ({progress}/{path_number})")
+    parser = argparse.ArgumentParser(description='Apply a rainbow effect to an image.')
+    parser.add_argument('paths', metavar='PATH', type=str, nargs='+',
+                        help='one or more paths to the images to be processed')
+    parser.add_argument('--rate', dest='color_change_rate', type=float, default=180.0,
+                        help='the rate at which the color changes (default: 180.0)')
+
+    args = parser.parse_args()
+
+    for progress, path in enumerate(args.paths, start=1):
+        print(f"\rConvert {path} ({progress}/{len(args.paths)})")
         try:
-            rainbow(path, path + ".rainbow.gif")
+            rainbow(path, path + ".rainbow.gif", args.color_change_rate)
         except Exception:
             print_exc()

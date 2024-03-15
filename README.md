@@ -10,7 +10,7 @@ python3 -m pip install --upgrade Pillow
 python3 -m pip install --upgrade numpy
 ```
 
-Do `python3 jebation.py [path]` for use it.
+Do `python3 jebation.py [--rate = 180] [path]`
 
 ![alt text](https://raw.githubusercontent.com/Dashstrom/Jebation/main/exemple/rikka.gif "Normal gif")
 ![alt text](https://raw.githubusercontent.com/Dashstrom/Jebation/main/exemple/rikka.gif.rainbow.gif "Rainbow gif")
