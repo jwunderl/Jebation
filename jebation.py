@@ -27,10 +27,11 @@ def rainbow_list(image: Image.Image) -> List[Image.Image]:
     colored_frames = []
     for i, (np_frame, info) in enumerate(np_frames):
         change_color = i * 180 / len(np_frames)
+        alpha_channel = np_frame[..., 3]
         np_frame[..., 0] = np_frame[..., 0] * rainbow_angle(change_color + 45)
         np_frame[..., 1] = np_frame[..., 1] * rainbow_angle(change_color + 90)
         np_frame[..., 2] = np_frame[..., 2] * rainbow_angle(change_color)
-        np_frame[..., 3] = (np_frame[..., 3] > 130) * 255
+        np_frame[..., 3] = alpha_channel  # Preserve original alpha channel
         img = Image.fromarray(np_frame)
         img.info = info
         colored_frames.append(img)
@@ -44,16 +45,15 @@ def rainbow(path: str, dest: str) -> None:
     frames[0].save(
         dest,
         background=frames[0].info.get("background", 255),
-        fromat='GIF',
+        format='GIF',
         version="GIF89a",
         save_all=True,
         append_images=frames[1:],
         optimize=False,
         duration=[frame.info.get("duration", 40) for frame in frames],
         loop=image.info.get("loop", 0),
-        transparency=255,
         palette=Image.WEB,
-        disposal=[frame.info.get("disposal", 1) for frame in frames],
+        disposal=[2 for _ in frames],  # Use disposal=2 to clear out old frames
         comment="Made by Dashstrom"
     )
 
